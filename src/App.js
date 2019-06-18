@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { Route } from 'react-router-dom';
 import AddBookmark from './AddBookmark/AddBookmark';
 import BookmarkList from './BookmarkList/BookmarkList';
+import BookmarksContext from './BookmarksContext'
+import Rating from './Rating/Rating'
 import Nav from './Nav/Nav';
 import config from './config';
 import './App.css';
@@ -32,7 +34,7 @@ const bookmarks = [
 
 class App extends Component {
   state = {
-    bookmarks,
+    bookmarks: [],
     error: null,
   };
 
@@ -40,6 +42,15 @@ class App extends Component {
     this.setState({
       bookmarks,
       error: null,
+    })
+  }
+
+  deleteBookmark = bookmarkId => {
+    const newBookmarks = this.state.bookmarks.filter(bookmark =>
+      bookmark.id !== bookmarkId)
+
+    this.setState({
+      bookmarks: newBookmarks
     })
   }
 
@@ -68,29 +79,30 @@ class App extends Component {
   }
 
   render() {
-    const { bookmarks } = this.state
+    const contextValue = {
+      bookmarks: this.state.bookmarks,
+      addBookmark: this.addBookmark,
+      deleteBookmark: this.deleteBookmark
+    }
     return (
       <main className='App'>
         <h1>Bookmarks!</h1>
-        <Nav />
-        <div className='content' aria-live='polite'>
-          <Route
-            path='/add-bookmark'
-            render={({ history }) => {
-              return <AddBookmark
-                onAddBookmark={this.addBookmark}
-                onClickCancel={() => history.push('/')}
+        <BookmarksContext.Provider value={contextValue} >
+          <Nav />
+            <div className='content' aria-live='polite'>
+              <Route
+                path='/add-bookmark'
+                component={AddBookmark}
               />
-            }}
-          />
-          <Route
-            exact
-            path='/'
-            render={({ history }) => {
-              return <BookmarkList bookmarks={bookmarks} />
-            }}
-          />
-        </div>
+              <Route
+                exact
+                path='/'
+                component={BookmarkList}
+              />
+            </div>
+            <Rating value={4}/>
+        </BookmarksContext.Provider>
+        <BookmarkList bookmarks={[{a:2, b:4}, {a:9, b:12}]}/>
       </main>
     );
   }
